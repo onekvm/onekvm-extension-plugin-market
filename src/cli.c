@@ -10,6 +10,21 @@
 
 static int write_all(const char *path, const char *data, size_t length) {
 	char temporary[sizeof(FEED_CONFIG) + 16];
+	char directory[sizeof(FEED_CONFIG)];
+	const char *slash = strrchr(path, '/');
+	if (slash && slash != path) {
+		size_t dir_length = (size_t)(slash - path);
+		if (dir_length >= sizeof(directory)) {
+			fprintf(stderr, "feed config path too long\n");
+			return 1;
+		}
+		memcpy(directory, path, dir_length);
+		directory[dir_length] = '\0';
+		if (mkdir(directory, 0755) != 0 && errno != EEXIST) {
+			fprintf(stderr, "mkdir %s: %s\n", directory, strerror(errno));
+			return 1;
+		}
+	}
 	snprintf(temporary, sizeof(temporary), "%s.tmp", path);
 	FILE *file = fopen(temporary, "w");
 	if (!file) {
