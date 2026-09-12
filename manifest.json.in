@@ -1,0 +1,78 @@
+{
+  "manifest_version": 1,
+  "id": "plugin-market",
+  "i18n": {
+    "default": {
+      "name": "Plugin marketplace",
+      "description": "Configure the signed extension package feed under /etc/opkg and browse marketplace installs from that channel."
+    },
+    "zh": {
+      "name": "插件市场",
+      "description": "配置 /etc/opkg 下的签名扩展软件包源，并从该通道浏览和安装插件。"
+    },
+    "zh-TW": {
+      "name": "外掛市場",
+      "description": "設定 /etc/opkg 下的簽署擴充軟體包源，並從該通道瀏覽與安裝外掛。"
+    }
+  },
+  "version": "@VERSION@",
+  "api_version": 2,
+  "architecture": "@ARCH@",
+  "kind": "service",
+  "author": "OneKVM",
+  "homepage": "https://github.com/onekvm/onekvm-extension-plugin-market",
+  "permissions": ["opkg-admin"],
+  "capabilities": [],
+  "default_enabled": true,
+  "icon": {"source": "lucide", "name": "store"},
+  "page": {
+    "title": "Plugin marketplace",
+    "renderer": "vue",
+    "entrypoint": "web/page.js",
+    "icon": {"source": "lucide", "name": "store"}
+  },
+  "methods": [
+    {
+      "name": "get_feeds",
+      "command": ["bin/onekvm-plugin-market", "get-feeds"],
+      "available_when_disabled": true,
+      "timeout_seconds": 5
+    },
+    {
+      "name": "set_feeds",
+      "command": ["bin/onekvm-plugin-market", "set-feeds"],
+      "available_when_disabled": true,
+      "timeout_seconds": 5
+    }
+  ],
+  "settings_schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "service_enabled": {
+        "type": "boolean",
+        "title": "Background service",
+        "default": false,
+        "readOnly": true,
+        "i18n": {
+          "default": "Background service",
+          "zh": "后台服务",
+          "zh-TW": "背景服務"
+        }
+      }
+    }
+  },
+  "secret_fields": [],
+  "memory_budget": "1M",
+  "resource_limits": {
+    "memory_max": "8M",
+    "cpu_quota": "5%",
+    "tasks_max": 4,
+    "limit_nofile": 32
+  },
+  "healthcheck": {
+    "type": "exec",
+    "command": ["bin/onekvm-plugin-market", "--health"],
+    "timeout_seconds": 5
+  }
+}
