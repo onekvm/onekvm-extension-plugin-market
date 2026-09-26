@@ -4,6 +4,7 @@ VERSION ?= 0.0.0-dev
 ARCH ?= unknown
 CC ?= gcc
 CFLAGS ?= -Wall -Wextra -Wpedantic -O2
+LDFLAGS ?=
 
 .PHONY: all install clean
 
@@ -11,7 +12,7 @@ all: bin/onekvm-plugin-market
 
 bin/onekvm-plugin-market: src/cli.c
 	mkdir -p bin
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 clean:
 	rm -f bin/onekvm-plugin-market
