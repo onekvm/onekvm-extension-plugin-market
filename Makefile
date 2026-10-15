@@ -8,18 +8,19 @@ LDFLAGS ?=
 
 .PHONY: all install clean
 
-all: bin/onekvm-plugin-market
+all: bin/onekvm-plugin-marketplace
 
-bin/onekvm-plugin-market: src/cli.c
+bin/onekvm-plugin-marketplace: src/cli.c
 	mkdir -p bin
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 
 clean:
-	rm -f bin/onekvm-plugin-market
+	rm -f bin/onekvm-plugin-marketplace
 
 install: all
-	install -Dm0755 bin/onekvm-plugin-market $(DESTDIR)$(PREFIX)/bin/onekvm-plugin-market
+	install -Dm0755 bin/onekvm-plugin-marketplace $(DESTDIR)$(PREFIX)/bin/onekvm-plugin-marketplace
 	install -Dm0644 web/page.js $(DESTDIR)$(PREFIX)/web/page.js
+	install -Dm0644 web/shell.js $(DESTDIR)$(PREFIX)/web/shell.js
 	install -d $(DESTDIR)$(PREFIX)
 	sed -e 's/@ARCH@/$(ARCH)/g' -e 's/@VERSION@/$(VERSION)/g' \
 		manifest.json.in >$(DESTDIR)$(PREFIX)/manifest.json

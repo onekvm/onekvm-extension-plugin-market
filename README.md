@@ -1,21 +1,34 @@
-# OneKVM plugin marketplace
+# onekvm-extension-plugin-market
 
-Configures the signed extension package feed by writing
-`/etc/opkg/onekvm-feed.conf`. Requires the `opkg-admin` sandbox permission.
+Marketplace UI for browsing signed `onekvm-extension-*` packages from the
+configured opkg feed, installing/updating/removing them, and managing custom feed
+sources under `/etc/opkg/onekvm-ext-{name}.conf`.
 
-Cross-version upgrades (for example `nanokvm/0.1.0` → `0.2.0`) are not done by
-retargeting this file alone; use the planned `onekvm-upgrade` package because
-the jump may include kernel/ABI changes. See `docs/package-feeds.md`.
+The type filter follows the manifest's `kind`: `network` groups VPNs, mesh
+networking, tunnels, and DDNS under **Networking & tunnels**. Media protocols,
+cloud providers, and other services retain their own types.
 
-## Build
+Requires the `opkg-admin` sandbox permission. Package listing reads
+`/data/pkg-state/opkg/lists`. Install/remove are executed by the extension
+host (privileged), not inside the marketplace sandbox.
 
-```sh
-make
-make install DESTDIR=/tmp/root PREFIX=/data/onekvm/apps/plugin-market/0.1.0 \
-  VERSION=0.1.0 ARCH=riscv64
-```
+`web/shell.js` registers package listing, online installation, and installation
+progress methods with the OneKVM Shell. Other first-party pages, such as Cloud
+Services, consume those methods instead of receiving package-manager access.
 
-## Methods
+System/default feeds stay in `/etc/opkg/onekvm-feed.conf` and are not edited by
+this extension. The host loads both when applying signed-feed policy.
 
-- `get_feeds` → `{ "feeds_text": "..." }`
-- `set_feeds` with `{ "feeds_text": "..." }` validates and atomically replaces the feed file
+Choose **Check for updates** to refresh the signed package indexes. Installed
+plugins with a newer package show an **Update** action and the current/target
+versions; the status filter can show only updates. Version comparison follows
+opkg ordering, including numeric components, epochs and recipe revisions.
+An installed development package is not offered an older release as an update.
+Updates use the regular download/install progress dialog, briefly stop the
+plugin, and preserve its settings and enabled state.
+
+The host's `list_packages` method accepts `{ "refresh": true }` and returns
+`installed_version`, `package_version`, `installed_package_version` and
+`update_available` for each entry. When package metadata is unavailable after
+an OS slot switch, only a newer extension version is offered. Local-only
+plugins remain listed without an online update action.

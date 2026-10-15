@@ -4,15 +4,15 @@
   "i18n": {
     "default": {
       "name": "Plugin marketplace",
-      "description": "Configure the signed extension package feed under /etc/opkg and browse marketplace installs from that channel."
+      "description": "Install plugins from package sources, and manage custom package sources."
     },
     "zh": {
       "name": "插件市场",
-      "description": "配置 /etc/opkg 下的签名扩展软件包源，并从该通道浏览和安装插件。"
+      "description": "从软件源安装插件，并管理自定义软件包源。"
     },
     "zh-TW": {
       "name": "外掛市場",
-      "description": "設定 /etc/opkg 下的簽署擴充軟體包源，並從該通道瀏覽與安裝外掛。"
+      "description": "從軟體源安裝外掛，並管理自訂軟體包源。"
     }
   },
   "version": "@VERSION@",
@@ -31,16 +31,55 @@
     "entrypoint": "web/page.js",
     "icon": {"source": "lucide", "name": "store"}
   },
+  "shell": {
+    "entrypoint": "web/shell.js"
+  },
   "methods": [
     {
-      "name": "get_feeds",
-      "command": ["bin/onekvm-plugin-market", "get-feeds"],
+      "name": "list_packages",
+      "command": ["bin/onekvm-plugin-marketplace", "list-packages"],
+      "available_when_disabled": true,
+      "timeout_seconds": 30
+    },
+    {
+      "name": "install_package",
+      "command": ["bin/onekvm-plugin-marketplace", "install-package"],
+      "available_when_disabled": true,
+      "timeout_seconds": 30
+    },
+    {
+      "name": "install_progress",
+      "command": ["bin/onekvm-plugin-marketplace", "install-progress"],
       "available_when_disabled": true,
       "timeout_seconds": 5
     },
     {
-      "name": "set_feeds",
-      "command": ["bin/onekvm-plugin-market", "set-feeds"],
+      "name": "remove_package",
+      "command": ["bin/onekvm-plugin-marketplace", "remove-package"],
+      "available_when_disabled": true,
+      "timeout_seconds": 30
+    },
+    {
+      "name": "list_sources",
+      "command": ["bin/onekvm-plugin-marketplace", "list-sources"],
+      "available_when_disabled": true,
+      "timeout_seconds": 5
+    },
+    {
+      "name": "set_source",
+      "command": ["bin/onekvm-plugin-marketplace", "set-source"],
+      "available_when_disabled": true,
+      "timeout_seconds": 5
+    },
+    {
+      "name": "set_source_enabled",
+      "command": ["bin/onekvm-plugin-marketplace", "set-source-enabled"],
+      "available_when_disabled": true,
+      "timeout_seconds": 5
+    },
+    {
+      "name": "remove_source",
+      "command": ["bin/onekvm-plugin-marketplace", "remove-source"],
       "available_when_disabled": true,
       "timeout_seconds": 5
     }
@@ -65,14 +104,14 @@
   "secret_fields": [],
   "memory_budget": "1M",
   "resource_limits": {
-    "memory_max": "8M",
-    "cpu_quota": "5%",
-    "tasks_max": 4,
-    "limit_nofile": 32
+    "memory_max": "16M",
+    "cpu_quota": "15%",
+    "tasks_max": 8,
+    "limit_nofile": 64
   },
   "healthcheck": {
     "type": "exec",
-    "command": ["bin/onekvm-plugin-market", "--health"],
+    "command": ["bin/onekvm-plugin-marketplace", "--health"],
     "timeout_seconds": 5
   }
 }
