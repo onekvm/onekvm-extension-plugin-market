@@ -102,7 +102,6 @@
     }
   },
   "secret_fields": [],
-  "memory_budget": "1M",
   "resource_limits": {
     "memory_max": "16M",
     "cpu_quota": "15%",
