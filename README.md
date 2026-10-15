@@ -11,13 +11,13 @@ and manage custom package sources from OneKVM.
 
 ## Features
 
-- Browse signed extension packages from the configured opkg feeds
-- Install, update, and uninstall plugins, with download and install progress
-- Search plugins and filter by status or manifest `kind`
-- Group VPNs, mesh networking, tunnels, and DDNS under **Networking & tunnels**
-- Add, enable, disable, and remove custom package sources
-- Let other OneKVM pages list and install packages through the shell
-- No resident service
+- Install an available extension from a signed package source, with download progress
+- Update an installed extension when a newer package is published, keeping its settings and enabled state
+- Uninstall an extension; its data may remain on the device
+- Search extensions, and filter them by installed, available, update, or type
+- Check the signed package index for updates
+- Show how much storage the installed extensions use
+- Add, edit, disable, or remove a custom package source, and disable the built-in system source
 
 ## Install and enable
 
@@ -34,27 +34,25 @@ The extension is enabled by default. Open **Plugin marketplace** to use it.
 
 ## Usage
 
-The **Extensions** tab lists plugins from the signed feeds. Choose **Check for
-updates** to refresh those indexes. An installed plugin with a newer package
-shows **Update** together with the current and target versions. The status
-filter can show installed plugins, available plugins, or only updates.
+The **Extensions** tab lists extensions from the enabled package sources.
+**Check for updates** refreshes the signed indexes. An extension with a newer
+package shows **Update** and both versions. Status can be limited to
+**Installed**, **Available**, or **Update available**. Type follows each
+extension's manifest: **Networking & tunnels**, **Cloud service**,
+**Protocol**, or **Service**.
 
-Version comparison follows opkg ordering, including numeric components, epochs,
-and recipe revisions. An installed development package is not offered an older
-release as an update. Updating uses the same download and install dialog,
-briefly stops that plugin, and keeps its settings and enabled state.
+An update stops that extension briefly, then restores its settings and enabled
+state. An installed development package is not offered an older release. An
+extension present only on the device stays in the list and has no online
+update.
 
-Plugins that exist only on the device stay in the list and have no online
-update action. After an OS slot switch, when package metadata is unavailable,
-only a newer extension version is offered.
-
-The **Package sources** tab manages feeds. The system source is written by the
-image: its `src` content is read-only here, and it can be disabled. Custom
-sources can be added, edited, disabled, or removed. A disabled source is left
-out of the package list. Custom sources are stored as
-`/etc/opkg/onekvm-ext-{name}.conf`. A source key uses lowercase letters,
-numbers, and hyphens, and its content is one or more opkg `src` or `src/gz`
-lines.
+The **Package sources** tab lists the system source and any custom sources.
+The system source is written by the image. Its content is read-only here, and
+it can be disabled. A custom source is stored as
+`/etc/opkg/onekvm-ext-{name}.conf`. Its key uses lowercase letters, numbers,
+and hyphens, and its content is one or more opkg `src` or `src/gz` lines. A
+disabled source is left out of the extension list. With no enabled source, the
+page lists only extensions that are already installed.
 
 ## How it works
 
@@ -72,7 +70,9 @@ sources together when it applies signed-feed policy. The system feed remains
 
 `list_packages` accepts `{ "refresh": true }` and returns `installed_version`,
 `package_version`, `installed_package_version`, and `update_available` for
-each entry.
+each entry. Version comparison follows opkg ordering, including numeric
+components, epochs, and recipe revisions. After an OS slot switch, when
+package metadata is unavailable, only a newer extension version is offered.
 
 ## License
 
