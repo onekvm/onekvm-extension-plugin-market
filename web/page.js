@@ -1,11 +1,13 @@
 (() => {
   const runtime = window.OneKVMPluginUI.v1
-  const { computed, defineComponent, h, onMounted, ref } = runtime.vue
+  const { computed, defineComponent, h, onMounted, ref, watch } = runtime.vue
   const {
     NAlert, NButton, NCard, NEmpty, NForm, NFormItem, NInput, NModal, NProgress, NSelect, NSpin, NSwitch, NTabPane, NTabs, NTag,
     useDialog, useMessage,
   } = runtime.naive
   const lucideIcons = runtime.icons || {}
+  const ExtensionDetailsDialog = runtime.dialogs?.ExtensionDetails || null
+  const InfoIcon = lucideIcons.Info || null
   const BoxIcon = lucideIcons.Box || null
   const DownloadIcon = lucideIcons.Download || null
   const TrashIcon = lucideIcons.Trash2 || lucideIcons.Trash || null
@@ -31,6 +33,7 @@
       kindProtocol: '協定',
       kindService: '服務',
       kindNetwork: '組網與穿透',
+      kindEnvironment: '執行環境',
       kindCloudProvider: '雲端服務',
       filteredCount: '顯示 {visible} / {total}',
       emptyFiltered: '沒有符合搜尋或篩選條件的外掛',
@@ -55,6 +58,7 @@
       save: '儲存',
       remove: '刪除',
       edit: '編輯',
+      details: '詳情',
       install: '安裝',
       update: '更新',
       updateAvailable: '有更新',
@@ -107,6 +111,7 @@
       kindProtocol: '协议',
       kindService: '服务',
       kindNetwork: '组网与穿透',
+      kindEnvironment: '运行环境',
       kindCloudProvider: '云服务',
       filteredCount: '显示 {visible} / {total}',
       emptyFiltered: '没有符合搜索或筛选条件的插件',
@@ -131,6 +136,7 @@
       save: '保存',
       remove: '删除',
       edit: '编辑',
+      details: '详情',
       install: '安装',
       update: '更新',
       updateAvailable: '有更新',
@@ -183,6 +189,7 @@
       kindProtocol: 'Protocol',
       kindService: 'Service',
       kindNetwork: 'Networking & tunnels',
+      kindEnvironment: 'Environment',
       kindCloudProvider: 'Cloud service',
       filteredCount: 'Showing {visible} of {total}',
       emptyFiltered: 'No extensions match the current search and filters',
@@ -207,6 +214,7 @@
       save: 'Save',
       remove: 'Remove',
       edit: 'Edit',
+      details: 'Details',
       install: 'Install',
       update: 'Update',
       updateAvailable: 'Update available',
@@ -304,6 +312,9 @@
 }
 .plugin-marketplace-tab-body { display: grid; gap: 10px; padding-top: 2px; }
 .plugin-marketplace-catalog-spin { min-height: 84px; }
+.plugin-marketplace-catalog-spin.n-spin-container > .n-spin-body {
+  top: var(--plugin-marketplace-spinner-top, 50%);
+}
 .plugin-marketplace-list {
   margin: 0;
   padding: 0;
@@ -435,6 +446,7 @@
   margin-inline: auto;
 }
 .plugin-marketplace-installer-actions { display: flex; width: 100%; align-items: center; justify-content: flex-end; gap: 8px; }
+.plugin-marketplace-details-action { margin-right: auto; }
 .plugin-marketplace-indeterminate {
   position: relative;
   height: 4px;
@@ -697,6 +709,61 @@
     return h('div', { class: 'plugin-marketplace-size-badges' }, badges)
   }
 
+  const CatalogSpin = defineComponent({
+    name: 'PluginMarketplaceCatalogSpin',
+    props: { show: Boolean },
+    setup(props, { slots }) {
+      const spin = ref(null)
+      watch([() => props.show, spin], ([show, instance], _previous, onCleanup) => {
+        const element = instance?.$el
+        if (!show || !element) return
+        let frame = 0
+        const clippingParents = []
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          if (/(auto|scroll|hidden|clip)/.test(getComputedStyle(parent).overflowY)) {
+            clippingParents.push(parent)
+          }
+        }
+        function updatePosition() {
+          frame = 0
+          const rect = element.getBoundingClientRect()
+          let top = Math.max(0, rect.top)
+          let bottom = Math.min(window.innerHeight, rect.bottom)
+          for (const parent of clippingParents) {
+            const bounds = parent.getBoundingClientRect()
+            const contentTop = bounds.top + parent.clientTop
+            top = Math.max(top, contentTop)
+            bottom = Math.min(bottom, contentTop + parent.clientHeight)
+          }
+          // Follow the viewport center, keeping the indicator inside the visible list.
+          if (bottom > top) {
+            const halfHeight = (element.querySelector('.n-spin-body')?.offsetHeight || 0) / 2
+            const center = bottom - top < halfHeight * 2
+              ? (top + bottom) / 2
+              : Math.max(top + halfHeight, Math.min(window.innerHeight / 2, bottom - halfHeight))
+            element.style.setProperty('--plugin-marketplace-spinner-top', `${center - rect.top}px`)
+          }
+        }
+        function schedulePosition() {
+          if (!frame) frame = window.requestAnimationFrame(updatePosition)
+        }
+        const observer = new ResizeObserver(schedulePosition)
+        observer.observe(element)
+        for (const parent of clippingParents) observer.observe(parent)
+        window.addEventListener('scroll', schedulePosition, true)
+        window.addEventListener('resize', schedulePosition)
+        schedulePosition()
+        onCleanup(() => {
+          observer.disconnect()
+          window.removeEventListener('scroll', schedulePosition, true)
+          window.removeEventListener('resize', schedulePosition)
+          if (frame) window.cancelAnimationFrame(frame)
+        })
+      }, { flush: 'post' })
+      return () => h(NSpin, { ref: spin, class: 'plugin-marketplace-catalog-spin', show: props.show }, slots)
+    },
+  })
+
   const Page = defineComponent({
     name: 'PluginMarketPage',
     props: { host: { type: Object, required: true } },
@@ -718,6 +785,8 @@
       const togglingKey = ref('')
       const busyPackage = ref('')
       const busyAction = ref('')
+      const detailsEntry = ref(null)
+      const detailsOpen = ref(false)
       const installerPhase = ref('idle')
       const installerEntry = ref(null)
       const installerError = ref('')
@@ -741,6 +810,7 @@
       const kindOptions = computed(() => [
         { label: labels.allTypes, value: 'all' },
         { label: labels.kindNetwork, value: 'network' },
+        { label: labels.kindEnvironment, value: 'environment' },
         { label: labels.kindCloudProvider, value: 'cloud-provider' },
         { label: labels.kindProtocol, value: 'protocol' },
         { label: labels.kindService, value: 'service' },
@@ -1094,6 +1164,35 @@
 
       onMounted(loadAll)
 
+      function openDetails(entry) {
+        detailsEntry.value = entry
+        detailsOpen.value = true
+      }
+
+      function renderDetailsButton(entry, installer = false) {
+        if (!ExtensionDetailsDialog) return null
+        return h(NButton, {
+          size: 'small',
+          secondary: !installer,
+          class: installer ? 'plugin-marketplace-details-action' : undefined,
+          disabled: isBusy.value,
+          onClick: () => openDetails(entry),
+        }, {
+          icon: InfoIcon ? () => h(InfoIcon) : undefined,
+          default: () => labels.details,
+        })
+      }
+
+      function renderDetailsModal() {
+        if (!ExtensionDetailsDialog || !detailsEntry.value) return null
+        return h(ExtensionDetailsDialog, {
+          show: detailsOpen.value,
+          id: detailsEntry.value.id,
+          name: packageDisplayName(detailsEntry.value),
+          'onUpdate:show': (show) => { detailsOpen.value = show },
+        })
+      }
+
       function renderInstallerModal() {
         const phase = installerPhase.value
         const entry = installerEntry.value
@@ -1187,6 +1286,7 @@
         const footerButtons = []
         if (entry && phase === 'confirm') {
           footerButtons.push(
+            renderDetailsButton(entry, true),
             h(NButton, { onClick: closeInstaller }, { default: () => labels.cancel }),
             h(NButton, { type: 'primary', onClick: runInstallerInstall }, { default: () => updating ? labels.update : labels.install }),
           )
@@ -1250,6 +1350,7 @@
               type: entry.update_available ? 'warning' : entry.installed ? 'success' : 'default',
             }, { default: () => (entry.update_available ? labels.updateAvailable : entry.installed ? labels.installed : labels.available) }),
             h('div', { class: 'plugin-marketplace-actions-inline' }, [
+              renderDetailsButton(entry),
               entry.update_available
                 ? h(NButton, {
                   size: 'small',
@@ -1428,6 +1529,7 @@
 
       return () => h('section', { class: 'plugin-marketplace-page' }, [
         error.value ? h(NAlert, { type: 'error', showIcon: false }, { default: () => error.value }) : null,
+        renderDetailsModal(),
         renderInstallerModal(),
         renderSourceEditor(),
         h(NTabs, {
@@ -1494,7 +1596,7 @@
                     total: packages.value.length,
                   })),
                 ]),
-                h(NSpin, { class: 'plugin-marketplace-catalog-spin', show: loading.value }, {
+                h(CatalogSpin, { show: loading.value }, {
                   default: () => (
                     showEmptyPackages.value
                       ? h(NEmpty, { description: packages.value.length ? labels.emptyFiltered : labels.emptyPackages })
@@ -1517,7 +1619,7 @@
                     default: () => labels.addSource,
                   }),
                 ]),
-                h(NSpin, { class: 'plugin-marketplace-catalog-spin', show: loading.value }, {
+                h(CatalogSpin, { show: loading.value }, {
                   default: () => (
                     showEmptySources.value
                       ? h(NEmpty, { description: labels.emptySources })

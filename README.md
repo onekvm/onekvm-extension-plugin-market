@@ -11,6 +11,7 @@ and manage custom package sources from OneKVM.
 
 ## Features
 
+- View extension details, including features, permissions, package dependencies, and kernel modules before installation
 - Install an available extension from a signed package source, with download progress
 - Update an installed extension when a newer package is published, keeping its settings and enabled state
 - Uninstall an extension; its data may remain on the device
