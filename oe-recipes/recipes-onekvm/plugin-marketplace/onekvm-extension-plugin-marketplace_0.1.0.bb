@@ -2,7 +2,7 @@ SUMMARY = "OneKVM plugin marketplace extension"
 HOMEPAGE = "https://github.com/onekvm/onekvm-extension-plugin-market"
 LICENSE = "GPL-3.0-only"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=1ebbd3e34237af26da5dc08a4e440464"
-PR = "r20"
+PR = "r21"
 
 ONEKVM_COMPONENT_GIT_URI ??= "git://github.com/onekvm/onekvm-extension-plugin-market.git;protocol=https;branch=main"
 ONEKVM_COMPONENT_SRCREV ??= ""

@@ -1189,6 +1189,8 @@
           show: detailsOpen.value,
           id: detailsEntry.value.id,
           name: packageDisplayName(detailsEntry.value),
+          icon: detailsEntry.value.icon || undefined,
+          iconDataUrl: customIconDataUrl(detailsEntry.value),
           'onUpdate:show': (show) => { detailsOpen.value = show },
         })
       }
