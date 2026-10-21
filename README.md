@@ -38,9 +38,8 @@ The extension is enabled by default. Open **Plugin marketplace** to use it.
 The **Extensions** tab lists extensions from the enabled package sources.
 **Check for updates** refreshes the signed indexes. An extension with a newer
 package shows **Update** and both versions. Status can be limited to
-**Installed**, **Available**, or **Update available**. Type follows each
-extension's manifest: **Networking & tunnels**, **Cloud service**,
-**Protocol**, or **Service**.
+**Installed**, **Available**, or **Update available**. Filter by **Network**
+(including OpenVPN), **Environment**, **Cloud service**, **Protocol**, or **Service**.
 
 An update stops that extension briefly, then restores its settings and enabled
 state. An installed development package is not offered an older release. An

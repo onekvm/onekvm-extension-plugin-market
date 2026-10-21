@@ -32,7 +32,7 @@
       allTypes: '全部類型',
       kindProtocol: '協定',
       kindService: '服務',
-      kindNetwork: '組網與穿透',
+      kindNetwork: '網路',
       kindEnvironment: '執行環境',
       kindCloudProvider: '雲端服務',
       filteredCount: '顯示 {visible} / {total}',
@@ -110,7 +110,7 @@
       allTypes: '全部类型',
       kindProtocol: '协议',
       kindService: '服务',
-      kindNetwork: '组网与穿透',
+      kindNetwork: '网络',
       kindEnvironment: '运行环境',
       kindCloudProvider: '云服务',
       filteredCount: '显示 {visible} / {total}',
@@ -188,7 +188,7 @@
       allTypes: 'All types',
       kindProtocol: 'Protocol',
       kindService: 'Service',
-      kindNetwork: 'Networking & tunnels',
+      kindNetwork: 'Network',
       kindEnvironment: 'Environment',
       kindCloudProvider: 'Cloud service',
       filteredCount: 'Showing {visible} of {total}',
@@ -821,7 +821,9 @@
           if (statusFilter.value === 'installed' && !entry.installed) return false
           if (statusFilter.value === 'available' && entry.installed) return false
           if (statusFilter.value === 'updates' && !entry.update_available) return false
-          if (kindFilter.value !== 'all' && entry.kind !== kindFilter.value) return false
+          // Keep OpenVPN's environment lifecycle separate from its category.
+          const category = entry.id === 'openvpn' ? 'network' : entry.kind
+          if (kindFilter.value !== 'all' && category !== kindFilter.value) return false
           if (!query) return true
           const localized = localizedFields(entry)
           return [entry.id, entry.package, localized.name, localized.description]
