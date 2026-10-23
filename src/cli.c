@@ -1251,6 +1251,13 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "read invoke payload failed\n");
 			return 1;
 		}
+		/* Signing keys must be validated and stored by the privileged host.
+		 * Never report success while silently dropping trust on an older host. */
+		if (json_string_field(payload, "public_key")) {
+			free(payload);
+			fprintf(stderr, "source signing keys require an updated OneKVM extension host\n");
+			return 1;
+		}
 		const char *key_field = json_string_field(payload, "key");
 		const char *name_field = json_string_field(payload, "name");
 		const char *text_field = json_string_field(payload, "feeds_text");

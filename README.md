@@ -54,6 +54,19 @@ and hyphens, and its content is one or more opkg `src` or `src/gz` lines. A
 disabled source is left out of the extension list. With no enabled source, the
 page lists only extensions that are already installed.
 
+External sources require an ASCII-armored OpenPGP **public key**. Paste it into
+**Signing public key**, choose **Check public key**, compare the fingerprint with
+the provider, then **Save and trust source**. Private keys, expired keys and
+multiple primary keys are rejected. Mirrors under built-in trusted URL prefixes
+may leave the key blank.
+
+The key and fingerprint are stored with the source and can be viewed or replaced
+when editing it. Before refreshing indexes, the host rebuilds opkg's runtime
+keyring from image keys and enabled custom sources. Changing a key, disabling or
+deleting a source invalidates cached indexes; the next refresh drops keys no
+longer in use. opkg uses a shared keyring, so adding a key trusts that provider's
+package signatures.
+
 ## How it works
 
 The page is `web/page.js`. `web/shell.js` registers `listPackages`,

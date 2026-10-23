@@ -1,6 +1,6 @@
 (() => {
   const runtime = window.OneKVMPluginUI.v1
-  const { computed, defineComponent, h, onMounted, ref, watch } = runtime.vue
+  const { computed, defineComponent, h, nextTick, onMounted, ref, watch } = runtime.vue
   const {
     NAlert, NButton, NCard, NEmpty, NForm, NFormItem, NInput, NModal, NProgress, NSelect, NSpin, NSwitch, NTabPane, NTabs, NTag,
     useDialog, useMessage,
@@ -48,9 +48,15 @@
       editSource: '編輯源',
       name: '名稱',
       namePlaceholder: '例如 內部鏡像',
-      key: '識別',
+      key: '來源識別',
       keyPlaceholder: '例如 mirror',
       keyHint: '只能使用小寫字母、數字和連字符',
+      publicKey: '簽章公鑰',
+      inspectKey: '檢查公鑰',
+      publicKeyHint: '外部來源必填，內建信任來源可留空。請向來源提供者核對公鑰指紋。',
+      publicKeyPlaceholder: '貼上公鑰\n-----BEGIN PGP PUBLIC KEY BLOCK-----',
+      keyFingerprint: '公鑰指紋',
+      trustSource: '儲存並信任來源',
       feeds: 'src 內容',
       placeholder: 'src onekvm-riscv64imafdc https://updates.example.org/nanokvm/0.2.0/riscv64imafdc',
       load: '重新整理',
@@ -59,6 +65,8 @@
       remove: '刪除',
       edit: '編輯',
       details: '詳情',
+      logWaiting: '等待安裝日誌輸出…',
+      logTruncated: '僅顯示最近的安裝輸出。',
       install: '安裝',
       update: '更新',
       updateAvailable: '有更新',
@@ -126,9 +134,15 @@
       editSource: '编辑源',
       name: '名称',
       namePlaceholder: '例如 内部镜像',
-      key: '标识',
+      key: '源标识',
       keyPlaceholder: '例如 mirror',
       keyHint: '只能使用小写字母、数字和连字符',
+      publicKey: '签名公钥',
+      inspectKey: '检查公钥',
+      publicKeyHint: '外部源必填，内置信任源可留空。请向源提供者核对公钥指纹。',
+      publicKeyPlaceholder: '粘贴公钥\n-----BEGIN PGP PUBLIC KEY BLOCK-----',
+      keyFingerprint: '公钥指纹',
+      trustSource: '保存并信任源',
       feeds: 'src 内容',
       placeholder: 'src onekvm-riscv64imafdc https://updates.example.org/nanokvm/0.2.0/riscv64imafdc',
       load: '刷新',
@@ -137,6 +151,8 @@
       remove: '删除',
       edit: '编辑',
       details: '详情',
+      logWaiting: '等待安装日志输出…',
+      logTruncated: '仅显示最近的安装输出。',
       install: '安装',
       update: '更新',
       updateAvailable: '有更新',
@@ -204,9 +220,15 @@
       editSource: 'Edit source',
       name: 'Name',
       namePlaceholder: 'e.g. Internal mirror',
-      key: 'Key',
+      key: 'Source ID',
       keyPlaceholder: 'e.g. mirror',
       keyHint: 'Use lowercase letters, numbers, and hyphens',
+      publicKey: 'Signing public key',
+      inspectKey: 'Check public key',
+      publicKeyHint: 'Required for external sources; optional for built-in trusted sources. Check the fingerprint with the provider.',
+      publicKeyPlaceholder: 'Paste public key\n-----BEGIN PGP PUBLIC KEY BLOCK-----',
+      keyFingerprint: 'Public key fingerprint',
+      trustSource: 'Save and trust source',
       feeds: 'src content',
       placeholder: 'src onekvm-riscv64imafdc https://updates.example.org/nanokvm/0.2.0/riscv64imafdc',
       load: 'Refresh',
@@ -215,6 +237,8 @@
       remove: 'Remove',
       edit: 'Edit',
       details: 'Details',
+      logWaiting: 'Waiting for installation output…',
+      logTruncated: 'Showing the most recent installation output.',
       install: 'Install',
       update: 'Update',
       updateAvailable: 'Update available',
@@ -265,7 +289,38 @@
     })
   }
 
+  // Keep installation output readable when paired with an older host UI.
+  const InstallLogDetails = runtime.components?.InstallLogDetails || defineComponent({
+    props: { log: String, failed: Boolean, truncated: Boolean },
+    setup(props) {
+      const open = ref(props.failed)
+      const output = ref(null)
+      watch(() => props.failed, failed => { if (failed) open.value = true })
+      watch(() => props.log, async () => {
+        const element = output.value
+        const follow = !element || element.scrollHeight - element.scrollTop - element.clientHeight < 24
+        await nextTick()
+        if (follow && output.value) output.value.scrollTop = output.value.scrollHeight
+      })
+      return () => h('details', {
+        class: 'plugin-marketplace-log-details', open: open.value,
+        onToggle: event => { open.value = event.target.open },
+      }, [
+        h('summary', null, labels.details),
+        open.value ? h('div', null, [
+          props.truncated ? h('p', null, labels.logTruncated) : null,
+          h('pre', { ref: output, tabindex: 0 }, props.log || labels.logWaiting),
+        ]) : null,
+      ])
+    },
+  })
+
   const styles = [`
+.plugin-marketplace-log-details { width: 100%; min-width: 0; text-align: start; }
+.plugin-marketplace-log-details > summary { width: fit-content; padding: 6px 0; cursor: pointer; font-size: 12px; }
+.plugin-marketplace-log-details > summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.plugin-marketplace-log-details pre { height: min(220px, 32vh); min-height: 120px; margin: 6px 0 0; padding: 10px; overflow: auto; border: 1px solid var(--border); background: var(--secondary); color: var(--foreground); font: 11px/1.4 ui-monospace, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.plugin-marketplace-log-details p { font-size: 11px; color: var(--muted-foreground); }
 .plugin-marketplace-page { display: grid; gap: 10px; }
 .plugin-marketplace-heading {
   display: flex;
@@ -530,7 +585,15 @@
   color: var(--muted-foreground);
 }
 .plugin-marketplace-sources { display: grid; gap: 8px; }
-.plugin-marketplace-source-editor { width: min(500px, calc(100vw - 28px)); }
+.plugin-marketplace-source-editor {
+  width: min(560px, calc(100vw - 28px));
+  max-height: calc(100dvh - 28px);
+}
+.plugin-marketplace-source-editor > .n-card-content { overflow-y: auto; }
+.plugin-marketplace-source-field { width: 100%; min-width: 0; }
+.plugin-marketplace-key-fingerprint { overflow-wrap: anywhere; font-family: ui-monospace, monospace; }
+.plugin-marketplace-key-check { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.plugin-marketplace-key-check > .n-button { flex-shrink: 0; }
 .plugin-marketplace-source-form { display: grid; gap: 14px; }
 .plugin-marketplace-source-editor-actions {
   display: flex;
@@ -539,7 +602,6 @@
   gap: 8px;
 }
 .plugin-marketplace-source-form textarea {
-  min-height: 140px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
 }
@@ -564,7 +626,7 @@
   const SOURCE_KEY_RE = /^[a-z0-9][a-z0-9-]{0,62}$/
 
   function blankDraft() {
-    return { key: '', name: '', feeds_text: '', path: '', savedKey: '', savedText: '' }
+    return { key: '', name: '', feeds_text: '', public_key: '', key_fingerprint: '', path: '', savedKey: '', savedText: '' }
   }
 
   function validSourceKey(value) {
@@ -584,6 +646,8 @@
       key,
       name,
       feeds_text,
+      public_key: typeof item?.public_key === 'string' ? item.public_key : '',
+      key_fingerprint: typeof item?.key_fingerprint === 'string' ? item.key_fingerprint : '',
       path: typeof item?.path === 'string' ? item.path : '',
       builtin: Boolean(item?.builtin),
       enabled: item?.enabled !== false,
@@ -790,14 +854,7 @@
       const installerPhase = ref('idle')
       const installerEntry = ref(null)
       const installerError = ref('')
-      const installerProgress = ref({
-        phase: '',
-        percent: null,
-        bytes: 0,
-        total_bytes: 0,
-        message: '',
-        status: '',
-      })
+      const installerProgress = ref(idleProgress())
       const error = ref('')
       const message = useMessage()
       const dialog = useDialog()
@@ -832,11 +889,14 @@
       })
       const showEmptyPackages = computed(() => !loading.value && filteredPackages.value.length === 0)
       const showEmptySources = computed(() => !loading.value && sources.value.length === 0)
+      const keyChecking = ref(false)
+      const editorError = ref('')
       const editingExisting = computed(() => Boolean(editor.value.savedKey))
       const editorValid = computed(() => (
         validSourceKey(editor.value.key)
         && validSourceDisplayName(editor.value.name)
         && Boolean(String(editor.value.feeds_text || '').trim())
+        && (!editor.value.public_key.trim() || Boolean(editor.value.key_fingerprint))
       ))
       const isBusy = computed(() => Boolean(busyPackage.value) || saving.value || togglingKey.value || installerPhase.value === 'installing')
       const storageText = computed(() => {
@@ -927,6 +987,8 @@
           total_bytes: 0,
           message: '',
           status: '',
+          log: '',
+          log_truncated: false,
         }
       }
 
@@ -991,6 +1053,8 @@
             total_bytes: Number(progress?.total_bytes) || 0,
             message: String(progress?.message || ''),
             status: String(progress?.status || ''),
+            log: typeof progress?.log === 'string' ? progress.log : '',
+            log_truncated: progress?.log_truncated === true,
           }
           const phase = installerProgress.value.phase
           const status = installerProgress.value.status
@@ -1013,6 +1077,7 @@
         if (!entry || installerPhase.value === 'installing') return
         installerError.value = ''
         installerProgress.value = {
+          ...idleProgress(),
           phase: 'prepare',
           percent: null,
           bytes: 0,
@@ -1092,36 +1157,60 @@
         }
       }
 
+      async function inspectSourceKey() {
+        const publicKey = editor.value.public_key.trim()
+        if (!publicKey || keyChecking.value) return
+        keyChecking.value = true
+        editorError.value = ''
+        try {
+          const result = await props.host.invoke('inspect_source_key', { public_key: publicKey })
+          if (editor.value.public_key.trim() === publicKey) {
+            editor.value.key_fingerprint = String(result.fingerprint || '')
+          }
+        } catch (reason) {
+          if (editor.value.public_key.trim() === publicKey) {
+            editorError.value = reason instanceof Error ? reason.message : String(reason)
+          }
+        } finally {
+          keyChecking.value = false
+        }
+      }
+
       async function saveSource(entry) {
         saving.value = true
-        error.value = ''
+        editorError.value = ''
         try {
           await props.host.invoke('set_source', {
             key: entry.key.trim(),
             name: entry.name.trim(),
             feeds_text: entry.feeds_text,
+            public_key: entry.public_key.trim(),
           })
           message.success(labels.saved)
           editorOpen.value = false
           editor.value = blankDraft()
           await loadAll()
         } catch (reason) {
-          error.value = reason instanceof Error ? reason.message : String(reason)
+          editorError.value = reason instanceof Error ? reason.message : String(reason)
         } finally {
           saving.value = false
         }
       }
 
       function openAddSource() {
+        editorError.value = ''
         editor.value = blankDraft()
         editorOpen.value = true
       }
 
       function openEditSource(entry) {
+        editorError.value = ''
         editor.value = {
           key: entry.key,
           name: entry.name,
           feeds_text: entry.feeds_text,
+          public_key: entry.public_key,
+          key_fingerprint: entry.key_fingerprint,
           path: entry.path,
           savedKey: entry.savedKey || entry.key,
           savedText: entry.savedText,
@@ -1318,7 +1407,15 @@
               'aria-modal': 'true',
               onClose: closeInstaller,
             }, {
-              default: () => body,
+              default: () => [
+                body,
+                phase !== 'confirm' || installerError.value
+                  ? h(InstallLogDetails, {
+                    log: installerProgress.value.log || installerError.value,
+                    truncated: installerProgress.value.log_truncated,
+                    failed: Boolean(installerError.value),
+                  }) : null,
+              ],
               footer: () => h('div', { class: 'plugin-marketplace-installer-actions' }, footerButtons),
             })
             : null,
@@ -1458,6 +1555,9 @@
           entry.feeds_text
             ? h('pre', { class: 'plugin-marketplace-feeds' }, entry.feeds_text.trim())
             : null,
+          entry.key_fingerprint
+            ? h('div', { class: 'plugin-marketplace-path plugin-marketplace-key-fingerprint' }, `${labels.keyFingerprint}: ${entry.key_fingerprint}`)
+            : null,
         ])
       }
 
@@ -1473,9 +1573,10 @@
             class: 'plugin-marketplace-source-editor',
             title: editingExisting.value ? labels.editSource : labels.addSource,
             closable: !saving.value,
-            bordered: false,
+            bordered: true,
             size: 'small',
             role: 'dialog',
+            'aria-label': editingExisting.value ? labels.editSource : labels.addSource,
             'aria-modal': 'true',
             onClose: closeEditor,
           }, {
@@ -1485,8 +1586,10 @@
               showFeedback: false,
             }, {
               default: () => [
-                h(NFormItem, { label: labels.name }, {
+                editorError.value ? h(NAlert, { type: 'error', showIcon: false }, { default: () => editorError.value }) : null,
+                h(NFormItem, { label: labels.name, labelProps: { for: 'marketplace-source-name' } }, {
                   default: () => h(NInput, {
+                    inputProps: { id: 'marketplace-source-name' },
                     value: editor.value.name,
                     disabled: loading.value || isBusy.value,
                     placeholder: labels.namePlaceholder,
@@ -1494,27 +1597,59 @@
                     'onUpdate:value': (value) => { editor.value.name = value },
                   }),
                 }),
-                h(NFormItem, { label: labels.key }, {
-                  default: () => [
+                h(NFormItem, { label: labels.key, labelProps: { for: 'marketplace-source-id' } }, {
+                  default: () => h('div', { class: 'plugin-marketplace-source-field' }, [
                     h(NInput, {
+                      inputProps: { id: 'marketplace-source-id', 'aria-describedby': 'marketplace-source-id-hint' },
                       value: editor.value.key,
                       disabled: loading.value || isBusy.value || editingExisting.value,
                       placeholder: labels.keyPlaceholder,
                       maxlength: 63,
                       'onUpdate:value': (value) => { editor.value.key = value },
                     }),
-                    h('div', { class: 'plugin-marketplace-field-hint' }, labels.keyHint),
-                  ],
+                    h('div', { id: 'marketplace-source-id-hint', class: 'plugin-marketplace-field-hint' }, labels.keyHint),
+                  ]),
                 }),
-                h(NFormItem, { label: labels.feeds }, {
+                h(NFormItem, { label: labels.feeds, labelProps: { for: 'marketplace-source-feeds' } }, {
                   default: () => h(NInput, {
                     type: 'textarea',
+                    inputProps: { id: 'marketplace-source-feeds', spellcheck: false },
                     value: editor.value.feeds_text,
                     disabled: loading.value || isBusy.value,
                     placeholder: labels.placeholder,
-                    autosize: { minRows: 8, maxRows: 16 },
+                    autosize: { minRows: 3, maxRows: 6 },
                     'onUpdate:value': (value) => { editor.value.feeds_text = value },
                   }),
+                }),
+                h(NFormItem, { label: labels.publicKey, labelProps: { for: 'marketplace-source-public-key' } }, {
+                  default: () => h('div', { class: 'plugin-marketplace-source-field' }, [
+                    h(NInput, {
+                      type: 'textarea',
+                      inputProps: { id: 'marketplace-source-public-key', 'aria-describedby': 'marketplace-source-public-key-hint', spellcheck: false },
+                      value: editor.value.public_key,
+                      disabled: loading.value || isBusy.value,
+                      placeholder: labels.publicKeyPlaceholder,
+                      maxlength: 65536,
+                      autosize: { minRows: 3, maxRows: 6 },
+                      'onUpdate:value': (value) => {
+                        editor.value.public_key = value
+                        editor.value.key_fingerprint = ''
+                        editorError.value = ''
+                      },
+                    }),
+                    h('div', { id: 'marketplace-source-public-key-hint', class: 'plugin-marketplace-field-hint' }, labels.publicKeyHint),
+                    h('div', { class: 'plugin-marketplace-key-check' }, [
+                      h(NButton, {
+                        size: 'small',
+                        loading: keyChecking.value,
+                        disabled: isBusy.value || keyChecking.value || !editor.value.public_key.trim(),
+                        onClick: inspectSourceKey,
+                      }, { default: () => labels.inspectKey }),
+                      editor.value.key_fingerprint
+                        ? h('div', { class: 'plugin-marketplace-field-hint plugin-marketplace-key-fingerprint', role: 'status' }, `${labels.keyFingerprint}: ${editor.value.key_fingerprint}`)
+                        : null,
+                    ]),
+                  ]),
                 }),
               ],
             }),
@@ -1525,7 +1660,7 @@
                 loading: saving.value,
                 disabled: loading.value || isBusy.value || !editorValid.value,
                 onClick: () => saveSource(editor.value),
-              }, { default: () => (editingExisting.value ? labels.save : labels.add) }),
+              }, { default: () => (editor.value.public_key.trim() ? labels.trustSource : (editingExisting.value ? labels.save : labels.add)) }),
             ]),
           }),
         })

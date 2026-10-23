@@ -66,10 +66,16 @@
       "timeout_seconds": 5
     },
     {
+      "name": "inspect_source_key",
+      "command": ["bin/onekvm-plugin-marketplace", "inspect-source-key"],
+      "available_when_disabled": true,
+      "timeout_seconds": 10
+    },
+    {
       "name": "set_source",
       "command": ["bin/onekvm-plugin-marketplace", "set-source"],
       "available_when_disabled": true,
-      "timeout_seconds": 5
+      "timeout_seconds": 10
     },
     {
       "name": "set_source_enabled",
