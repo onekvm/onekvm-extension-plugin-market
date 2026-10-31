@@ -67,6 +67,7 @@
       details: '詳情',
       logWaiting: '等待安裝日誌輸出…',
       logTruncated: '僅顯示最近的安裝輸出。',
+      enableAfterInstall: '安裝後啟用',
       install: '安裝',
       update: '更新',
       updateAvailable: '有更新',
@@ -95,6 +96,7 @@
       preparingInstall: '正在準備安裝',
       progressBytes: '{received} / {total}',
       installComplete: '外掛安裝完成',
+      installCompleteDisabledDescription: '{name} 已安裝，尚未啟用。',
       installCompleteDescription: '{name} 已經可以使用。',
       done: '完成',
       uninstallConfirmTitle: '解除安裝',
@@ -153,6 +155,7 @@
       details: '详情',
       logWaiting: '等待安装日志输出…',
       logTruncated: '仅显示最近的安装输出。',
+      enableAfterInstall: '安装后启用',
       install: '安装',
       update: '更新',
       updateAvailable: '有更新',
@@ -181,6 +184,7 @@
       preparingInstall: '正在准备安装',
       progressBytes: '{received} / {total}',
       installComplete: '插件安装完成',
+      installCompleteDisabledDescription: '{name} 已安装，尚未启用。',
       installCompleteDescription: '{name} 已经可以使用。',
       done: '完成',
       uninstallConfirmTitle: '卸载插件',
@@ -239,6 +243,7 @@
       details: 'Details',
       logWaiting: 'Waiting for installation output…',
       logTruncated: 'Showing the most recent installation output.',
+      enableAfterInstall: 'Enable after installation',
       install: 'Install',
       update: 'Update',
       updateAvailable: 'Update available',
@@ -267,6 +272,7 @@
       preparingInstall: 'Preparing to install',
       progressBytes: '{received} / {total}',
       installComplete: 'Extension installed',
+      installCompleteDisabledDescription: '{name} is installed and disabled.',
       installCompleteDescription: '{name} is ready to use.',
       done: 'Done',
       uninstallConfirmTitle: 'Uninstall extension',
@@ -432,6 +438,7 @@
 }
 .plugin-marketplace-installer { width: min(500px, calc(100vw - 28px)); }
 .plugin-marketplace-installer-stage { display: grid; gap: 16px; min-height: 220px; }
+.plugin-marketplace-installer-enable { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; font-size: 13px; }
 .plugin-marketplace-installer-preview { display: flex; align-items: center; gap: 14px; }
 .plugin-marketplace-installer-icon {
   position: relative;
@@ -853,6 +860,9 @@
       const detailsOpen = ref(false)
       const installerPhase = ref('idle')
       const installerEntry = ref(null)
+      const installerEnableAfterInstall = ref(true)
+      const installerCanEnable = computed(() => installerEntry.value && !installerEntry.value.installed
+        && !['environment', 'cloud-provider'].includes(installerEntry.value.kind))
       const installerError = ref('')
       const installerProgress = ref(idleProgress())
       const error = ref('')
@@ -994,10 +1004,8 @@
 
       function closeInstaller() {
         if (installerPhase.value === 'installing') return
-        const completed = installerPhase.value === 'success'
         installerPhase.value = 'idle'
         installerError.value = ''
-        if (completed) window.dispatchEvent(new Event('onekvm:extensions-changed'))
       }
 
       function afterInstallerLeave() {
@@ -1007,6 +1015,7 @@
       }
 
       function openInstaller(entry) {
+        installerEnableAfterInstall.value = true
         installerEntry.value = entry
         installerError.value = ''
         installerProgress.value = idleProgress()
@@ -1093,6 +1102,7 @@
             package: entry.package,
             wait: false,
             size_bytes: Number(entry.size_bytes) || 0,
+            ...(installerCanEnable.value ? { enable_after_install: installerEnableAfterInstall.value } : {}),
           })
           if (result?.status === 'started' || result?.status === 'ok') {
             await waitForInstallProgress(entry.package)
@@ -1102,8 +1112,10 @@
             await waitForInstallProgress(entry.package)
           }
           installerPhase.value = 'success'
+          window.dispatchEvent(new Event('onekvm:extensions-changed'))
           await loadAll()
         } catch (reason) {
+          window.dispatchEvent(new Event('onekvm:extensions-changed'))
           installerError.value = reason instanceof Error ? reason.message : String(reason)
           installerPhase.value = 'confirm'
         } finally {
@@ -1351,7 +1363,9 @@
                 : null,
             ]),
             h('strong', null, updating ? labels.updateComplete : labels.installComplete),
-            h('span', null, formatLabel(updating ? labels.updateCompleteDescription : labels.installCompleteDescription, { name, ...versions })),
+            h('span', null, formatLabel(updating ? labels.updateCompleteDescription
+              : installerCanEnable.value && !installerEnableAfterInstall.value ? labels.installCompleteDisabledDescription
+                : labels.installCompleteDescription, { name, ...versions })),
           ])
         } else if (entry) {
           const localized = localizedFields(entry)
@@ -1374,6 +1388,14 @@
               ? h(NAlert, { type: 'error', showIcon: false }, { default: () => installerError.value })
               : null,
             h('p', { class: 'plugin-marketplace-installer-copy' }, formatLabel(updating ? labels.updateConfirm : labels.installConfirm, { name, ...versions })),
+            installerCanEnable.value ? h('div', { class: 'plugin-marketplace-installer-enable' }, [
+              h('span', null, labels.enableAfterInstall),
+              h(NSwitch, {
+                value: installerEnableAfterInstall.value,
+                'aria-label': labels.enableAfterInstall,
+                onUpdateValue: (value) => { installerEnableAfterInstall.value = value },
+              }),
+            ]) : null,
           ])
         }
         const footerButtons = []
