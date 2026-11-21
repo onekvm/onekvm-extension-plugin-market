@@ -712,6 +712,17 @@
     return lucideIcons[name] || BoxIcon
   }
 
+  // Icons are separate files the browser keeps; older devices send them inline.
+  const ICON_URL_PREFIX = '/api/extension-icons/'
+  const failedIcons = ref(new Set())
+
+  function packageIconUrl(entry) {
+    const path = typeof entry?.icon_url === 'string' ? entry.icon_url : ''
+    if (!path.startsWith(ICON_URL_PREFIX)) return ''
+    const url = typeof runtime.serviceURL === 'function' ? runtime.serviceURL(path) : path
+    return failedIcons.value.has(url) ? '' : url
+  }
+
   function customIconDataUrl(entry) {
     const fromField = typeof entry?.icon_data_url === 'string' ? entry.icon_data_url.trim() : ''
     if (fromField.startsWith('data:image/')) return fromField
@@ -721,6 +732,18 @@
   }
 
   function renderPackageIcon(entry, size = 20) {
+    const url = packageIconUrl(entry)
+    if (url) {
+      return h('img', {
+        src: url,
+        alt: '',
+        width: size,
+        height: size,
+        loading: 'lazy',
+        decoding: 'async',
+        onError: () => { failedIcons.value = new Set(failedIcons.value).add(url) },
+      })
+    }
     const dataUrl = customIconDataUrl(entry)
     if (dataUrl) {
       return h('img', { src: dataUrl, alt: '' })
@@ -935,7 +958,7 @@
         error.value = ''
         try {
           const [packageResponse, sourceResponse] = await Promise.all([
-            props.host.invoke('list_packages', { refresh }),
+            props.host.invoke('list_packages', { refresh, icon_urls: true }),
             props.host.invoke('list_sources'),
           ])
           const list = Array.isArray(packageResponse?.packages) ? packageResponse.packages : []
@@ -953,6 +976,7 @@
             update_available: Boolean(item?.installed && item?.update_available),
             i18n: item?.i18n && typeof item.i18n === 'object' ? item.i18n : {},
             icon: item?.icon && typeof item.icon === 'object' ? item.icon : null,
+            icon_url: typeof item?.icon_url === 'string' ? item.icon_url : '',
             icon_data_url: typeof item?.icon_data_url === 'string' ? item.icon_data_url : '',
             size_bytes: Number(item?.size_bytes) || 0,
             installed_size_bytes: Number(item?.installed_size_bytes) || 0,
@@ -1293,6 +1317,7 @@
           id: detailsEntry.value.id,
           name: packageDisplayName(detailsEntry.value),
           icon: detailsEntry.value.icon || undefined,
+          iconUrl: detailsEntry.value.icon_url || undefined,
           iconDataUrl: customIconDataUrl(detailsEntry.value),
           'onUpdate:show': (show) => { detailsOpen.value = show },
         })

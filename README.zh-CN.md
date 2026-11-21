@@ -72,6 +72,11 @@ opkg 使用共享密钥环，因此添加公钥表示信任该提供者的软件
 revision。切换 OS 槽位后，如果软件包元数据不可用，则只在扩展版本更新时
 提供更新。
 
+传入 `{ "icon_urls": true }` 时，每个软件包图标以 `icon_url` 返回，位于
+`/api/extension-icons/` 下并按内容哈希命名，浏览器可在多次访问间缓存。未传入时，
+图标仍以 `icon_data_url` 内联返回，供旧页面使用。Shell 的 `listPackages` 会原样
+传递调用参数。
+
 ## 许可证
 
 本项目使用 GNU General Public License v3.0，完整条款见

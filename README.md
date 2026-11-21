@@ -87,6 +87,11 @@ each entry. Version comparison follows opkg ordering, including numeric
 components, epochs, and recipe revisions. After an OS slot switch, when
 package metadata is unavailable, only a newer extension version is offered.
 
+With `{ "icon_urls": true }`, each package icon is an `icon_url` below
+`/api/extension-icons/`, named by content hash, which the browser keeps between
+visits. Without it, icons are returned inline as `icon_data_url`, as older
+pages expect. The Shell's `listPackages` passes its payload through.
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See
