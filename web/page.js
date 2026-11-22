@@ -106,6 +106,9 @@
       installing: '正在安裝 {name}…',
       uninstalling: '正在解除安裝 {name}…',
       emptyPackages: '尚無可用外掛',
+      loadingPackages: '正在載入外掛…',
+      loadingSources: '正在載入軟體包源…',
+      checkingUpdates: '正在檢查更新…',
       noPackageSource: '尚未設定可用的軟體包源，目前只能顯示已安裝外掛。請到「軟體包源」查看。',
       emptySources: '尚無軟體包源',
       pathHint: '檔案',
@@ -194,6 +197,9 @@
       installing: '正在安装 {name}…',
       uninstalling: '正在卸载 {name}…',
       emptyPackages: '暂无可用插件',
+      loadingPackages: '正在加载插件…',
+      loadingSources: '正在加载软件包源…',
+      checkingUpdates: '正在检查更新…',
       noPackageSource: '尚未配置可用的软件包源，目前只能显示已安装插件。请到「软件包源」查看。',
       emptySources: '暂无软件包源',
       pathHint: '文件',
@@ -282,6 +288,9 @@
       installing: 'Installing {name}…',
       uninstalling: 'Uninstalling {name}…',
       emptyPackages: 'No extensions available',
+      loadingPackages: 'Loading extensions…',
+      loadingSources: 'Loading package sources…',
+      checkingUpdates: 'Checking for updates…',
       noPackageSource: 'No package source is configured. Only installed extensions can be shown. Check Package sources.',
       emptySources: 'No package sources yet',
       pathHint: 'File',
@@ -805,7 +814,7 @@
 
   const CatalogSpin = defineComponent({
     name: 'PluginMarketplaceCatalogSpin',
-    props: { show: Boolean },
+    props: { show: Boolean, description: { type: String, default: '' } },
     setup(props, { slots }) {
       const spin = ref(null)
       watch([() => props.show, spin], ([show, instance], _previous, onCleanup) => {
@@ -854,7 +863,12 @@
           if (frame) window.cancelAnimationFrame(frame)
         })
       }, { flush: 'post' })
-      return () => h(NSpin, { ref: spin, class: 'plugin-marketplace-catalog-spin', show: props.show }, slots)
+      return () => h(NSpin, {
+        ref: spin,
+        class: 'plugin-marketplace-catalog-spin',
+        show: props.show,
+        description: props.description || undefined,
+      }, slots)
     },
   })
 
@@ -875,6 +889,7 @@
       const editorOpen = ref(false)
       const editor = ref(blankDraft())
       const loading = ref(false)
+      const checkingUpdates = ref(false)
       const saving = ref(false)
       const togglingKey = ref('')
       const busyPackage = ref('')
@@ -955,6 +970,7 @@
 
       async function loadAll(showSpinner = true, refresh = false) {
         if (showSpinner) loading.value = true
+        checkingUpdates.value = showSpinner && refresh
         error.value = ''
         try {
           const [packageResponse, sourceResponse] = await Promise.all([
@@ -993,6 +1009,7 @@
           error.value = reason instanceof Error ? reason.message : String(reason)
         } finally {
           if (showSpinner) loading.value = false
+          checkingUpdates.value = false
         }
       }
 
@@ -1782,7 +1799,10 @@
                     total: packages.value.length,
                   })),
                 ]),
-                h(CatalogSpin, { show: loading.value }, {
+                h(CatalogSpin, {
+                  show: loading.value,
+                  description: checkingUpdates.value ? labels.checkingUpdates : labels.loadingPackages,
+                }, {
                   default: () => (
                     showEmptyPackages.value
                       ? h(NEmpty, { description: packages.value.length ? labels.emptyFiltered : labels.emptyPackages })
@@ -1805,7 +1825,7 @@
                     default: () => labels.addSource,
                   }),
                 ]),
-                h(CatalogSpin, { show: loading.value }, {
+                h(CatalogSpin, { show: loading.value, description: labels.loadingSources }, {
                   default: () => (
                     showEmptySources.value
                       ? h(NEmpty, { description: labels.emptySources })
