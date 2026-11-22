@@ -109,6 +109,14 @@
       loadingPackages: '正在載入外掛…',
       loadingSources: '正在載入軟體包源…',
       checkingUpdates: '正在檢查更新…',
+      sourceProblem: '{name}：{reason}',
+      feedNotPublished: '尚未發布適用於目前系統版本的外掛，顯示的是上次取得的清單',
+      sourceNotFound: '位址不存在（HTTP 404），請檢查 src 內容',
+      sourceUnreachable: '連線逾時或無法存取，顯示的是上次取得的清單',
+      sourceServerError: '伺服器發生錯誤，請稍後再試',
+      sourceCertificate: '憑證驗證失敗，請檢查 src 內容',
+      sourceRejected: '簽章或有效期驗證失敗，顯示的是上次取得的清單',
+      sourceFailed: '更新失敗，請稍後再試',
       noPackageSource: '尚未設定可用的軟體包源，目前只能顯示已安裝外掛。請到「軟體包源」查看。',
       emptySources: '尚無軟體包源',
       pathHint: '檔案',
@@ -200,6 +208,14 @@
       loadingPackages: '正在加载插件…',
       loadingSources: '正在加载软件包源…',
       checkingUpdates: '正在检查更新…',
+      sourceProblem: '{name}：{reason}',
+      feedNotPublished: '尚未发布适用于当前系统版本的插件，显示的是上次获取的列表',
+      sourceNotFound: '地址不存在（HTTP 404），请检查 src 内容',
+      sourceUnreachable: '连接超时或无法访问，显示的是上次获取的列表',
+      sourceServerError: '服务器出错，请稍后再试',
+      sourceCertificate: '证书校验失败，请检查 src 内容',
+      sourceRejected: '签名或有效期校验失败，显示的是上次获取的列表',
+      sourceFailed: '更新失败，请稍后再试',
       noPackageSource: '尚未配置可用的软件包源，目前只能显示已安装插件。请到「软件包源」查看。',
       emptySources: '暂无软件包源',
       pathHint: '文件',
@@ -291,6 +307,14 @@
       loadingPackages: 'Loading extensions…',
       loadingSources: 'Loading package sources…',
       checkingUpdates: 'Checking for updates…',
+      sourceProblem: '{name}: {reason}',
+      feedNotPublished: 'No extensions are published for this system version yet; showing the last list received',
+      sourceNotFound: 'Address not found (HTTP 404); check the src content',
+      sourceUnreachable: 'Timed out or unreachable; showing the last list received',
+      sourceServerError: 'Server error; try again later',
+      sourceCertificate: 'Certificate verification failed; check the src content',
+      sourceRejected: 'Signature or validity check failed; showing the last list received',
+      sourceFailed: 'Update failed; try again later',
       noPackageSource: 'No package source is configured. Only installed extensions can be shown. Check Package sources.',
       emptySources: 'No package sources yet',
       pathHint: 'File',
@@ -590,6 +614,12 @@
   word-break: break-all;
 }
 .plugin-marketplace-source-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; }
+.plugin-marketplace-source-problem {
+  color: var(--warning, #d97706);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.plugin-marketplace-source-problems { display: grid; gap: 2px; }
 .plugin-marketplace-path {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 11px;
@@ -880,6 +910,8 @@
       const packages = ref([])
       const sources = ref([])
       const catalogLoaded = ref(false)
+      // Each package source's result in the device's last list update.
+      const feedUpdate = ref(null)
       const hasEnabledSource = computed(() => sources.value.some((source) =>
         source.enabled && /^\s*src(?:\/gz)?\s+\S+\s+https?:\/\/\S+/m.test(source.feeds_text)))
       const storage = ref({ total_bytes: 0, available_bytes: 0, used_bytes: 0 })
@@ -937,6 +969,28 @@
       })
       const showEmptyPackages = computed(() => !loading.value && filteredPackages.value.length === 0)
       const showEmptySources = computed(() => !loading.value && sources.value.length === 0)
+      const sourceProblems = computed(() => {
+        const results = Array.isArray(feedUpdate.value?.sources) ? feedUpdate.value.sources : []
+        return results.filter((result) => result && result.ok === false).map((result) => {
+          const key = String(result.key || '')
+          const builtin = Boolean(result.builtin)
+          const entry = sources.value.find((source) => source.key === key)
+          const name = builtin ? labels.builtinSource : (entry?.name || key)
+          const reason = {
+            not_found: builtin ? labels.feedNotPublished : labels.sourceNotFound,
+            unreachable: labels.sourceUnreachable,
+            server_error: labels.sourceServerError,
+            certificate: labels.sourceCertificate,
+            rejected: labels.sourceRejected,
+          }[result.failure] || labels.sourceFailed
+          return { key, builtin, reason, text: formatLabel(labels.sourceProblem, { name, reason }) }
+        })
+      })
+      function sourceProblem(entry) {
+        return sourceProblems.value.find((problem) => (
+          entry.builtin ? problem.builtin : (!problem.builtin && problem.key === entry.key)
+        ))
+      }
       const keyChecking = ref(false)
       const editorError = ref('')
       const editingExisting = computed(() => Boolean(editor.value.savedKey))
@@ -1004,6 +1058,11 @@
           }
           const sourceList = Array.isArray(sourceResponse?.sources) ? sourceResponse.sources : []
           sources.value = sourceList.map(sourceRecord)
+          feedUpdate.value = packageResponse?.feed_update && typeof packageResponse.feed_update === 'object'
+            ? packageResponse.feed_update
+            : null
+          const refreshError = typeof packageResponse?.refresh_error === 'string' ? packageResponse.refresh_error : ''
+          if (refreshError && !sourceProblems.value.length) error.value = refreshError
           catalogLoaded.value = true
         } catch (reason) {
           error.value = reason instanceof Error ? reason.message : String(reason)
@@ -1582,6 +1641,9 @@
               entry.path
                 ? h('div', { class: 'plugin-marketplace-path' }, `${labels.pathHint}: ${entry.path}`)
                 : null,
+              entry.enabled && sourceProblem(entry)
+                ? h('div', { class: 'plugin-marketplace-source-problem' }, sourceProblem(entry).reason)
+                : null,
             ]),
             h('div', { class: 'plugin-marketplace-source-actions' }, [
               h(NSwitch, {
@@ -1799,6 +1861,12 @@
                     total: packages.value.length,
                   })),
                 ]),
+                sourceProblems.value.length
+                  ? h(NAlert, { type: 'warning', showIcon: false }, {
+                    default: () => h('div', { class: 'plugin-marketplace-source-problems' },
+                      sourceProblems.value.map((problem) => h('div', { key: `${problem.builtin}:${problem.key}` }, problem.text))),
+                  })
+                  : null,
                 h(CatalogSpin, {
                   show: loading.value,
                   description: checkingUpdates.value ? labels.checkingUpdates : labels.loadingPackages,
