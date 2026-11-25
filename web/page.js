@@ -26,7 +26,7 @@
       packagesTab: '外掛',
       sourcesTab: '軟體包源',
       packagesDescription: '從軟體源直接安裝可用外掛。',
-      storageLabel: '儲存空間已用 {used} / {total}',
+      storageLabel: '已用儲存空間：{used} / {total}',
       searchPlaceholder: '搜尋外掛',
       allStatuses: '全部狀態',
       allTypes: '全部類型',
@@ -67,6 +67,7 @@
       details: '詳情',
       logWaiting: '等待安裝日誌輸出…',
       logTruncated: '僅顯示最近的安裝輸出。',
+      enableAfterInstall: '安裝後啟用',
       install: '安裝',
       update: '更新',
       updateAvailable: '有更新',
@@ -95,7 +96,8 @@
       preparingInstall: '正在準備安裝',
       progressBytes: '{received} / {total}',
       installComplete: '外掛安裝完成',
-      installCompleteDescription: '{name} 已經可以使用。',
+      installCompleteDisabledDescription: '{name} 已安裝，尚未啟用。',
+      installCompleteDescription: '{name} 已可使用。',
       done: '完成',
       uninstallConfirmTitle: '解除安裝',
       uninstallConfirm: '確定解除安裝「{name}」？外掛資料可能會保留。',
@@ -104,6 +106,17 @@
       installing: '正在安裝 {name}…',
       uninstalling: '正在解除安裝 {name}…',
       emptyPackages: '尚無可用外掛',
+      loadingPackages: '正在載入外掛…',
+      loadingSources: '正在載入軟體包源…',
+      checkingUpdates: '正在檢查更新…',
+      sourceProblem: '{name}：{reason}',
+      feedNotPublished: '尚未發布適用於目前系統版本的外掛，顯示的是上次取得的清單',
+      sourceNotFound: '位址不存在（HTTP 404），請檢查 src 內容',
+      sourceUnreachable: '連線逾時或無法存取，顯示的是上次取得的清單',
+      sourceServerError: '伺服器發生錯誤，請稍後再試',
+      sourceCertificate: '憑證驗證失敗，請檢查 src 內容',
+      sourceRejected: '簽章或有效期驗證失敗，顯示的是上次取得的清單',
+      sourceFailed: '更新失敗，請稍後再試',
       noPackageSource: '尚未設定可用的軟體包源，目前只能顯示已安裝外掛。請到「軟體包源」查看。',
       emptySources: '尚無軟體包源',
       pathHint: '檔案',
@@ -112,7 +125,7 @@
       packagesTab: '插件',
       sourcesTab: '软件包源',
       packagesDescription: '从软件源直接安装可用插件。',
-      storageLabel: '存储空间已用 {used} / {total}',
+      storageLabel: '已用存储空间：{used} / {total}',
       searchPlaceholder: '搜索插件',
       allStatuses: '全部状态',
       allTypes: '全部类型',
@@ -153,6 +166,7 @@
       details: '详情',
       logWaiting: '等待安装日志输出…',
       logTruncated: '仅显示最近的安装输出。',
+      enableAfterInstall: '安装后启用',
       install: '安装',
       update: '更新',
       updateAvailable: '有更新',
@@ -181,7 +195,8 @@
       preparingInstall: '正在准备安装',
       progressBytes: '{received} / {total}',
       installComplete: '插件安装完成',
-      installCompleteDescription: '{name} 已经可以使用。',
+      installCompleteDisabledDescription: '{name} 已安装，尚未启用。',
+      installCompleteDescription: '{name} 已可使用。',
       done: '完成',
       uninstallConfirmTitle: '卸载插件',
       uninstallConfirm: '确定卸载「{name}」？插件数据可能会保留。',
@@ -190,6 +205,17 @@
       installing: '正在安装 {name}…',
       uninstalling: '正在卸载 {name}…',
       emptyPackages: '暂无可用插件',
+      loadingPackages: '正在加载插件…',
+      loadingSources: '正在加载软件包源…',
+      checkingUpdates: '正在检查更新…',
+      sourceProblem: '{name}：{reason}',
+      feedNotPublished: '尚未发布适用于当前系统版本的插件，显示的是上次获取的列表',
+      sourceNotFound: '地址不存在（HTTP 404），请检查 src 内容',
+      sourceUnreachable: '连接超时或无法访问，显示的是上次获取的列表',
+      sourceServerError: '服务器出错，请稍后再试',
+      sourceCertificate: '证书校验失败，请检查 src 内容',
+      sourceRejected: '签名或有效期校验失败，显示的是上次获取的列表',
+      sourceFailed: '更新失败，请稍后再试',
       noPackageSource: '尚未配置可用的软件包源，目前只能显示已安装插件。请到「软件包源」查看。',
       emptySources: '暂无软件包源',
       pathHint: '文件',
@@ -198,7 +224,7 @@
       packagesTab: 'Extensions',
       sourcesTab: 'Package sources',
       packagesDescription: 'Install available extensions directly from the package source.',
-      storageLabel: 'Storage {used} used / {total}',
+      storageLabel: 'Storage used: {used} / {total}',
       searchPlaceholder: 'Search extensions',
       allStatuses: 'All statuses',
       allTypes: 'All types',
@@ -239,6 +265,7 @@
       details: 'Details',
       logWaiting: 'Waiting for installation output…',
       logTruncated: 'Showing the most recent installation output.',
+      enableAfterInstall: 'Enable after installation',
       install: 'Install',
       update: 'Update',
       updateAvailable: 'Update available',
@@ -267,6 +294,7 @@
       preparingInstall: 'Preparing to install',
       progressBytes: '{received} / {total}',
       installComplete: 'Extension installed',
+      installCompleteDisabledDescription: '{name} is installed and disabled.',
       installCompleteDescription: '{name} is ready to use.',
       done: 'Done',
       uninstallConfirmTitle: 'Uninstall extension',
@@ -276,6 +304,17 @@
       installing: 'Installing {name}…',
       uninstalling: 'Uninstalling {name}…',
       emptyPackages: 'No extensions available',
+      loadingPackages: 'Loading extensions…',
+      loadingSources: 'Loading package sources…',
+      checkingUpdates: 'Checking for updates…',
+      sourceProblem: '{name}: {reason}',
+      feedNotPublished: 'No extensions are published for this system version yet; showing the last list received',
+      sourceNotFound: 'Address not found (HTTP 404); check the src content',
+      sourceUnreachable: 'Timed out or unreachable; showing the last list received',
+      sourceServerError: 'Server error; try again later',
+      sourceCertificate: 'Certificate verification failed; check the src content',
+      sourceRejected: 'Signature or validity check failed; showing the last list received',
+      sourceFailed: 'Update failed; try again later',
       noPackageSource: 'No package source is configured. Only installed extensions can be shown. Check Package sources.',
       emptySources: 'No package sources yet',
       pathHint: 'File',
@@ -432,6 +471,7 @@
 }
 .plugin-marketplace-installer { width: min(500px, calc(100vw - 28px)); }
 .plugin-marketplace-installer-stage { display: grid; gap: 16px; min-height: 220px; }
+.plugin-marketplace-installer-enable { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 40px; font-size: 13px; }
 .plugin-marketplace-installer-preview { display: flex; align-items: center; gap: 14px; }
 .plugin-marketplace-installer-icon {
   position: relative;
@@ -574,6 +614,12 @@
   word-break: break-all;
 }
 .plugin-marketplace-source-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 4px; }
+.plugin-marketplace-source-problem {
+  color: var(--warning, #d97706);
+  font-size: 11px;
+  line-height: 1.35;
+}
+.plugin-marketplace-source-problems { display: grid; gap: 2px; }
 .plugin-marketplace-path {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 11px;
@@ -705,6 +751,17 @@
     return lucideIcons[name] || BoxIcon
   }
 
+  // Icons are separate files the browser keeps; older devices send them inline.
+  const ICON_URL_PREFIX = '/api/extension-icons/'
+  const failedIcons = ref(new Set())
+
+  function packageIconUrl(entry) {
+    const path = typeof entry?.icon_url === 'string' ? entry.icon_url : ''
+    if (!path.startsWith(ICON_URL_PREFIX)) return ''
+    const url = typeof runtime.serviceURL === 'function' ? runtime.serviceURL(path) : path
+    return failedIcons.value.has(url) ? '' : url
+  }
+
   function customIconDataUrl(entry) {
     const fromField = typeof entry?.icon_data_url === 'string' ? entry.icon_data_url.trim() : ''
     if (fromField.startsWith('data:image/')) return fromField
@@ -714,6 +771,18 @@
   }
 
   function renderPackageIcon(entry, size = 20) {
+    const url = packageIconUrl(entry)
+    if (url) {
+      return h('img', {
+        src: url,
+        alt: '',
+        width: size,
+        height: size,
+        loading: 'lazy',
+        decoding: 'async',
+        onError: () => { failedIcons.value = new Set(failedIcons.value).add(url) },
+      })
+    }
     const dataUrl = customIconDataUrl(entry)
     if (dataUrl) {
       return h('img', { src: dataUrl, alt: '' })
@@ -775,7 +844,7 @@
 
   const CatalogSpin = defineComponent({
     name: 'PluginMarketplaceCatalogSpin',
-    props: { show: Boolean },
+    props: { show: Boolean, description: { type: String, default: '' } },
     setup(props, { slots }) {
       const spin = ref(null)
       watch([() => props.show, spin], ([show, instance], _previous, onCleanup) => {
@@ -824,7 +893,12 @@
           if (frame) window.cancelAnimationFrame(frame)
         })
       }, { flush: 'post' })
-      return () => h(NSpin, { ref: spin, class: 'plugin-marketplace-catalog-spin', show: props.show }, slots)
+      return () => h(NSpin, {
+        ref: spin,
+        class: 'plugin-marketplace-catalog-spin',
+        show: props.show,
+        description: props.description || undefined,
+      }, slots)
     },
   })
 
@@ -836,6 +910,8 @@
       const packages = ref([])
       const sources = ref([])
       const catalogLoaded = ref(false)
+      // Each package source's result in the device's last list update.
+      const feedUpdate = ref(null)
       const hasEnabledSource = computed(() => sources.value.some((source) =>
         source.enabled && /^\s*src(?:\/gz)?\s+\S+\s+https?:\/\/\S+/m.test(source.feeds_text)))
       const storage = ref({ total_bytes: 0, available_bytes: 0, used_bytes: 0 })
@@ -845,6 +921,7 @@
       const editorOpen = ref(false)
       const editor = ref(blankDraft())
       const loading = ref(false)
+      const checkingUpdates = ref(false)
       const saving = ref(false)
       const togglingKey = ref('')
       const busyPackage = ref('')
@@ -853,6 +930,9 @@
       const detailsOpen = ref(false)
       const installerPhase = ref('idle')
       const installerEntry = ref(null)
+      const installerEnableAfterInstall = ref(true)
+      const installerCanEnable = computed(() => installerEntry.value && !installerEntry.value.installed
+        && !['environment', 'cloud-provider'].includes(installerEntry.value.kind))
       const installerError = ref('')
       const installerProgress = ref(idleProgress())
       const error = ref('')
@@ -889,6 +969,28 @@
       })
       const showEmptyPackages = computed(() => !loading.value && filteredPackages.value.length === 0)
       const showEmptySources = computed(() => !loading.value && sources.value.length === 0)
+      const sourceProblems = computed(() => {
+        const results = Array.isArray(feedUpdate.value?.sources) ? feedUpdate.value.sources : []
+        return results.filter((result) => result && result.ok === false).map((result) => {
+          const key = String(result.key || '')
+          const builtin = Boolean(result.builtin)
+          const entry = sources.value.find((source) => source.key === key)
+          const name = builtin ? labels.builtinSource : (entry?.name || key)
+          const reason = {
+            not_found: builtin ? labels.feedNotPublished : labels.sourceNotFound,
+            unreachable: labels.sourceUnreachable,
+            server_error: labels.sourceServerError,
+            certificate: labels.sourceCertificate,
+            rejected: labels.sourceRejected,
+          }[result.failure] || labels.sourceFailed
+          return { key, builtin, reason, text: formatLabel(labels.sourceProblem, { name, reason }) }
+        })
+      })
+      function sourceProblem(entry) {
+        return sourceProblems.value.find((problem) => (
+          entry.builtin ? problem.builtin : (!problem.builtin && problem.key === entry.key)
+        ))
+      }
       const keyChecking = ref(false)
       const editorError = ref('')
       const editingExisting = computed(() => Boolean(editor.value.savedKey))
@@ -922,10 +1024,11 @@
 
       async function loadAll(showSpinner = true, refresh = false) {
         if (showSpinner) loading.value = true
+        checkingUpdates.value = showSpinner && refresh
         error.value = ''
         try {
           const [packageResponse, sourceResponse] = await Promise.all([
-            props.host.invoke('list_packages', { refresh }),
+            props.host.invoke('list_packages', { refresh, icon_urls: true }),
             props.host.invoke('list_sources'),
           ])
           const list = Array.isArray(packageResponse?.packages) ? packageResponse.packages : []
@@ -943,6 +1046,7 @@
             update_available: Boolean(item?.installed && item?.update_available),
             i18n: item?.i18n && typeof item.i18n === 'object' ? item.i18n : {},
             icon: item?.icon && typeof item.icon === 'object' ? item.icon : null,
+            icon_url: typeof item?.icon_url === 'string' ? item.icon_url : '',
             icon_data_url: typeof item?.icon_data_url === 'string' ? item.icon_data_url : '',
             size_bytes: Number(item?.size_bytes) || 0,
             installed_size_bytes: Number(item?.installed_size_bytes) || 0,
@@ -954,11 +1058,17 @@
           }
           const sourceList = Array.isArray(sourceResponse?.sources) ? sourceResponse.sources : []
           sources.value = sourceList.map(sourceRecord)
+          feedUpdate.value = packageResponse?.feed_update && typeof packageResponse.feed_update === 'object'
+            ? packageResponse.feed_update
+            : null
+          const refreshError = typeof packageResponse?.refresh_error === 'string' ? packageResponse.refresh_error : ''
+          if (refreshError && !sourceProblems.value.length) error.value = refreshError
           catalogLoaded.value = true
         } catch (reason) {
           error.value = reason instanceof Error ? reason.message : String(reason)
         } finally {
           if (showSpinner) loading.value = false
+          checkingUpdates.value = false
         }
       }
 
@@ -994,10 +1104,8 @@
 
       function closeInstaller() {
         if (installerPhase.value === 'installing') return
-        const completed = installerPhase.value === 'success'
         installerPhase.value = 'idle'
         installerError.value = ''
-        if (completed) window.dispatchEvent(new Event('onekvm:extensions-changed'))
       }
 
       function afterInstallerLeave() {
@@ -1007,6 +1115,7 @@
       }
 
       function openInstaller(entry) {
+        installerEnableAfterInstall.value = true
         installerEntry.value = entry
         installerError.value = ''
         installerProgress.value = idleProgress()
@@ -1093,6 +1202,7 @@
             package: entry.package,
             wait: false,
             size_bytes: Number(entry.size_bytes) || 0,
+            ...(installerCanEnable.value ? { enable_after_install: installerEnableAfterInstall.value } : {}),
           })
           if (result?.status === 'started' || result?.status === 'ok') {
             await waitForInstallProgress(entry.package)
@@ -1102,8 +1212,10 @@
             await waitForInstallProgress(entry.package)
           }
           installerPhase.value = 'success'
+          window.dispatchEvent(new Event('onekvm:extensions-changed'))
           await loadAll()
         } catch (reason) {
+          window.dispatchEvent(new Event('onekvm:extensions-changed'))
           installerError.value = reason instanceof Error ? reason.message : String(reason)
           installerPhase.value = 'confirm'
         } finally {
@@ -1281,6 +1393,7 @@
           id: detailsEntry.value.id,
           name: packageDisplayName(detailsEntry.value),
           icon: detailsEntry.value.icon || undefined,
+          iconUrl: detailsEntry.value.icon_url || undefined,
           iconDataUrl: customIconDataUrl(detailsEntry.value),
           'onUpdate:show': (show) => { detailsOpen.value = show },
         })
@@ -1351,7 +1464,9 @@
                 : null,
             ]),
             h('strong', null, updating ? labels.updateComplete : labels.installComplete),
-            h('span', null, formatLabel(updating ? labels.updateCompleteDescription : labels.installCompleteDescription, { name, ...versions })),
+            h('span', null, formatLabel(updating ? labels.updateCompleteDescription
+              : installerCanEnable.value && !installerEnableAfterInstall.value ? labels.installCompleteDisabledDescription
+                : labels.installCompleteDescription, { name, ...versions })),
           ])
         } else if (entry) {
           const localized = localizedFields(entry)
@@ -1374,6 +1489,14 @@
               ? h(NAlert, { type: 'error', showIcon: false }, { default: () => installerError.value })
               : null,
             h('p', { class: 'plugin-marketplace-installer-copy' }, formatLabel(updating ? labels.updateConfirm : labels.installConfirm, { name, ...versions })),
+            installerCanEnable.value ? h('div', { class: 'plugin-marketplace-installer-enable' }, [
+              h('span', null, labels.enableAfterInstall),
+              h(NSwitch, {
+                value: installerEnableAfterInstall.value,
+                'aria-label': labels.enableAfterInstall,
+                onUpdateValue: (value) => { installerEnableAfterInstall.value = value },
+              }),
+            ]) : null,
           ])
         }
         const footerButtons = []
@@ -1517,6 +1640,9 @@
                 : h('div', { class: 'plugin-marketplace-path' }, entry.key),
               entry.path
                 ? h('div', { class: 'plugin-marketplace-path' }, `${labels.pathHint}: ${entry.path}`)
+                : null,
+              entry.enabled && sourceProblem(entry)
+                ? h('div', { class: 'plugin-marketplace-source-problem' }, sourceProblem(entry).reason)
                 : null,
             ]),
             h('div', { class: 'plugin-marketplace-source-actions' }, [
@@ -1735,7 +1861,16 @@
                     total: packages.value.length,
                   })),
                 ]),
-                h(CatalogSpin, { show: loading.value }, {
+                sourceProblems.value.length
+                  ? h(NAlert, { type: 'warning', showIcon: false }, {
+                    default: () => h('div', { class: 'plugin-marketplace-source-problems' },
+                      sourceProblems.value.map((problem) => h('div', { key: `${problem.builtin}:${problem.key}` }, problem.text))),
+                  })
+                  : null,
+                h(CatalogSpin, {
+                  show: loading.value,
+                  description: checkingUpdates.value ? labels.checkingUpdates : labels.loadingPackages,
+                }, {
                   default: () => (
                     showEmptyPackages.value
                       ? h(NEmpty, { description: packages.value.length ? labels.emptyFiltered : labels.emptyPackages })
@@ -1758,7 +1893,7 @@
                     default: () => labels.addSource,
                   }),
                 ]),
-                h(CatalogSpin, { show: loading.value }, {
+                h(CatalogSpin, { show: loading.value, description: labels.loadingSources }, {
                   default: () => (
                     showEmptySources.value
                       ? h(NEmpty, { description: labels.emptySources })
