@@ -20,7 +20,7 @@
   "architecture": "@ARCH@",
   "kind": "service",
   "author": "OneKVM",
-  "homepage": "https://github.com/onekvm/onekvm-extension-plugin-market",
+  "homepage": "https://github.com/onekvm/onekvm-extension-plugin-marketplace",
   "permissions": ["opkg-admin"],
   "capabilities": [],
   "default_enabled": true,
